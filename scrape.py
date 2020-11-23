@@ -32,30 +32,23 @@ for a, post in enumerate(soup.find_all(class_=['v1Nh3', 'kIKUG', '_bz0w'], limit
 				vid_name = '{}{}{}.mp4'.format(imgpath, posttype.lower(), a)
 				ureq.urlretrieve(video_src, vid_name)
 				print('saved video {}'.format(vid_name))
+			# if post type is Carousel, create a folder and save all image/video in the folder
 			elif posttype == 'Carousel':
 				carousel_folder = '{}post{}'.format(imgpath, a)
 				os.mkdir(carousel_folder)
 				try:
 					div = soup.find(class_=['JSZAJ', '_3eoV-', 'IjCL9', 'WXPwG'])
-					# print(div.find_all('div'))
 					for i in range(len(div.find_all('div'))):
-						# print(div.find_all('div')[i])
 						print(i)
 						content_src = soup.find(class_='KL4Bh').img['src']
 						content_name = '{}/{}{}.png'.format(carousel_folder, posttype.lower(), i)
 						if not content_src:
 							content_src = soup.find(class_='_5wCQW').video['src']
 							content_name = '{}/{}{}.mp4'.format(carousel_folder, posttype.lower(), i)
-						# try:
-						# 	content_src = soup.find(class_='KL4Bh').img['src']
-						# 	content_name = '{}/{}{}.png'.format(carousel_folder, posttype.lower(), i)
-						# except:
-						# 	content_src = soup.find(class_='_5wCQW').video['src']
-						# 	content_name = '{}/{}{}.mp4'.format(carousel_folder, posttype.lower(), i)
 						ureq.urlretrieve(content_src, content_name)
 						# go to next content of carousel
 						if i != len(div.find_all('div'))-1:
-							btn_next = driver2.find_element_by_id('_6CZji')
+							btn_next = driver2.find_element_by_class_name('_6CZji')
 							btn_next.click()
 					print('saved carousel {}'.format(carousel_folder))
 				except:
@@ -71,7 +64,6 @@ for a, post in enumerate(soup.find_all(class_=['v1Nh3', 'kIKUG', '_bz0w'], limit
 
 driver2.close()
 driver.close()
-
 
 # ig
 # div class="v1Nh3 kIKUG  _bz0w" -> is a post
