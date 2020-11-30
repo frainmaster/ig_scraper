@@ -2,11 +2,21 @@ from bs4 import BeautifulSoup as bs
 import selenium.webdriver as wd
 import urllib.request as ureq
 import os
+import time
+
+
+# fancy way of getting the number of steps to traverse the carousel posts
+def get_carousel_steps(a):
+    if a % 3 == 0:
+        return [1, 3, 3][:a//3]
+    else:
+        return [0, 3, 3, 3][:a//3+1]
+
 
 ig_url = 'https://www.instagram.com/'
 print('username: ')
 user_name = input() + '/'
-cd_path = 'chromedriver.exe'
+cd_path = 'chromedriver/chromedriver.exe'
 
 driver = wd.Chrome(cd_path)
 driver2 = wd.Chrome(cd_path)
@@ -21,6 +31,10 @@ except FileExistsError:
 
 imgpath = 'img/' + user_name
 
+profilepic = soup.find(class_='_6q-tv')
+ureq.urlretrieve(profilepic['src'], imgpath + 'profilepic.png')
+print('saved profile pic')
+
 for a, post in enumerate(soup.find_all(class_=['v1Nh3', 'kIKUG', '_bz0w'], limit=12)):
     try:
         if post.find(class_='u7YqG'):
@@ -29,33 +43,40 @@ for a, post in enumerate(soup.find_all(class_=['v1Nh3', 'kIKUG', '_bz0w'], limit
             soup = bs(driver2.page_source, 'html.parser')
             if posttype in ['Video', 'IGTV']:
                 video_src = soup.find(class_='_5wCQW').video['src']
-                vid_name = '{}{}{}.mp4'.format(imgpath, posttype.lower(), a)
+                vid_name = '{}{}{}.mp4'.format(imgpath, posttype.lower(), a+1)
                 ureq.urlretrieve(video_src, vid_name)
                 print('saved video {}'.format(vid_name))
             # if post type is Carousel, create a folder and save all image/video in the folder
             elif posttype == 'Carousel':
-                carousel_folder = '{}post{}'.format(imgpath, a)
+                carousel_folder = '{}post{}'.format(imgpath, a+1)
                 os.mkdir(carousel_folder)
                 try:
                     div = soup.find(class_=['JSZAJ', '_3eoV-', 'IjCL9', 'WXPwG'])
-                    for i in range(len(div.find_all('div'))):
-                        print(i)
-                        content_src = soup.find(class_='KL4Bh').img['src']
-                        content_name = '{}/{}{}.png'.format(carousel_folder, posttype.lower(), i)
-                        if not content_src:
-                            content_src = soup.find(class_='_5wCQW').video['src']
-                            content_name = '{}/{}{}.mp4'.format(carousel_folder, posttype.lower(), i)
-                        ureq.urlretrieve(content_src, content_name)
-                        # go to next content of carousel
-                        if i != len(div.find_all('div'))-1:
-                            btn_next = driver2.find_element_by_class_name('_6CZji')
+                    steps = get_carousel_steps(len(div.find_all('div')))
+                    btn_next = driver2.find_element_by_class_name('_6CZji')
+                    cnt = 1
+                    for step in steps:
+                        for i in range(step):
                             btn_next.click()
-                    print('saved carousel {}'.format(carousel_folder))
+                        time.sleep(.5)
+                        soup2 = bs(driver2.page_source, 'html.parser')
+                        lsts = soup2.find_all(class_='Ckrof')
+                        for lst in lsts:
+                            carousel_src = post_name = ''
+                            try:
+                                carousel_src = lst.find(class_='FFVAD')['src']
+                                post_name = '{}/img{}.png'.format(carousel_folder, cnt)
+                            except:
+                                carousel_src = lst.find(class_='tWeCl')['src']
+                                post_name = '{}/video{}.mp4'.format(carousel_folder, cnt)
+                            ureq.urlretrieve(carousel_src, post_name)
+                            cnt += 1
+                    print('saved carousel {} ({} img/vid)'.format(carousel_folder, cnt-1))
                 except:
                     print('error processing carousel posts. skipping to next')
         else:
             img_src = post.find('img')['src']
-            imgname = '{}img{}.png'.format(imgpath, a)
+            imgname = '{}img{}.png'.format(imgpath, a+1)
             ureq.urlretrieve(img_src, imgname)
             print('saved image {}'.format(imgname))
     except:
