@@ -3,7 +3,7 @@
 Scrape first 12 posts of a public Instagram account; be it images, videos, IGTV or Carousel.
 
 Downloads all posts to a folder named `img` in a file named after the account owner. 
-View the sample output in the `img` folder which uses [Selena Gomez](https://www.instagram.com/selenagomez/)'s account.
+View the sample output in the `img` folder which uses [Ryan Reynolds](https://www.instagram.com/vancityreynolds/)' account.
 
 Start with installing the packages needed as listed in `req.txt` file.
 > `pip install -r req.txt`
