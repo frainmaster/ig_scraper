@@ -16,7 +16,7 @@ def get_carousel_steps(a):
 ig_url = 'https://www.instagram.com/'
 print('username: ')
 user_name = input() + '/'
-cd_path = 'chromedriver/chromedriver.exe'
+cd_path = 'chromedriver/chromedriver_v90.exe'
 
 driver = wd.Chrome(cd_path)
 driver2 = wd.Chrome(cd_path)
@@ -38,16 +38,16 @@ print('saved profile pic')
 for a, post in enumerate(soup.find_all(class_=['v1Nh3', 'kIKUG', '_bz0w'], limit=12)):
     try:
         if post.find(class_='u7YqG'):
-            posttype = post.find(class_='u7YqG').span['aria-label']
+            post_type = post.find(class_='u7YqG').svg['aria-label']
             driver2.get(ig_url + post.a['href'])
             soup = bs(driver2.page_source, 'html.parser')
-            if posttype in ['Video', 'IGTV']:
+            if post_type in ['Video', 'IGTV']:
                 video_src = soup.find(class_='_5wCQW').video['src']
-                vid_name = '{}{}{}.mp4'.format(imgpath, posttype.lower(), a+1)
+                vid_name = '{}{}{}.mp4'.format(imgpath, post_type.lower(), a+1)
                 ureq.urlretrieve(video_src, vid_name)
                 print('saved video {}'.format(vid_name))
             # if post type is Carousel, create a folder and save all image/video in the folder
-            elif posttype == 'Carousel':
+            elif post_type == 'Carousel':
                 carousel_folder = '{}post{}'.format(imgpath, a+1)
                 os.mkdir(carousel_folder)
                 try:
